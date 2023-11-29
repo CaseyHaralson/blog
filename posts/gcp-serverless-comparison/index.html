@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Casey Haralson">
+<meta name="dcterms.date" content="2023-11-28">
+<meta name="description" content="A comparison between App Engine, Cloud Functions (1st and 2nd gen), and Cloud Run on Google Cloud.">
+
+<title>Cloud Report - GCP Serverless Web Services Comparison</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../favicon.ico" rel="icon">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Cloud Report</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CaseyHaralson" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">GCP Serverless Web Services Comparison</h1>
+                  <div>
+        <div class="description">
+          A comparison between App Engine, Cloud Functions (1st and 2nd gen), and Cloud Run on Google Cloud.
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">gcp</div>
+                <div class="quarto-category">serverless</div>
+                <div class="quarto-category">cloud functions</div>
+                <div class="quarto-category">cloud run</div>
+                <div class="quarto-category">app engine</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Casey Haralson </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">November 28, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#test-app" id="toc-test-app" class="nav-link" data-scroll-target="#test-app">Test App</a></li>
+  <li><a href="#serverless-parity" id="toc-serverless-parity" class="nav-link" data-scroll-target="#serverless-parity">Serverless Parity</a></li>
+  <li><a href="#request-throughput" id="toc-request-throughput" class="nav-link" data-scroll-target="#request-throughput">Request Throughput</a></li>
+  </ul></li>
+  <li><a href="#experiment" id="toc-experiment" class="nav-link" data-scroll-target="#experiment">Experiment</a></li>
+  <li><a href="#experiment-results" id="toc-experiment-results" class="nav-link" data-scroll-target="#experiment-results">Experiment Results</a>
+  <ul class="collapse">
+  <li><a href="#app-engine-1" id="toc-app-engine-1" class="nav-link" data-scroll-target="#app-engine-1">App Engine</a></li>
+  <li><a href="#cloud-functions-1st-gen" id="toc-cloud-functions-1st-gen" class="nav-link" data-scroll-target="#cloud-functions-1st-gen">Cloud Functions 1st Gen</a></li>
+  <li><a href="#cloud-functions-2nd-gen" id="toc-cloud-functions-2nd-gen" class="nav-link" data-scroll-target="#cloud-functions-2nd-gen">Cloud Functions 2nd Gen</a></li>
+  <li><a href="#cloud-run-1" id="toc-cloud-run-1" class="nav-link" data-scroll-target="#cloud-run-1">Cloud Run</a></li>
+  <li><a href="#normalized-results" id="toc-normalized-results" class="nav-link" data-scroll-target="#normalized-results">Normalized Results</a></li>
+  <li><a href="#verifying-results" id="toc-verifying-results" class="nav-link" data-scroll-target="#verifying-results">Verifying Results</a></li>
+  </ul></li>
+  <li><a href="#developer-experience" id="toc-developer-experience" class="nav-link" data-scroll-target="#developer-experience">Developer Experience</a>
+  <ul class="collapse">
+  <li><a href="#app-engine-2" id="toc-app-engine-2" class="nav-link" data-scroll-target="#app-engine-2">App Engine</a></li>
+  <li><a href="#cloud-functions-1" id="toc-cloud-functions-1" class="nav-link" data-scroll-target="#cloud-functions-1">Cloud Functions</a></li>
+  <li><a href="#cloud-run-2" id="toc-cloud-run-2" class="nav-link" data-scroll-target="#cloud-run-2">Cloud Run</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#comments" id="toc-comments" class="nav-link" data-scroll-target="#comments">Comments</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>Google Cloud has several serverless offerings for handling web requests: App Engine, Cloud Functions, and Cloud Run. In this article I would like to compare the request throughput between these offerings and explore the developer experience in working with these offerings.</p>
+<p><strong>App Engine</strong> is an easy way to create web applications without having to worry about things like databases, authentication, web servers, etc.</p>
+<p><strong>Cloud Functions</strong> runs specific code (a function) whenever a specified event happens. You can set the function to trigger on a web request or an event from a message bus. There are also two different versions of Cloud Functions: 1st gen and 2nd gen. This article will compare both.</p>
+<p><strong>Cloud Run</strong> is a service that runs containerized code. This could be anything from a website to a machine learning model.</p>
+<p>Serverless basically means that you don’t have to worry about hardware provisioning, software updating, etc. and you get flexible scalability. These services can scale to zero to minimize cost when no work needs to be done and can scale up “infinitely” when any amount of work needs to be done.</p>
+</section>
+<section id="methods" class="level2">
+<h2 class="anchored" data-anchor-id="methods">Methods</h2>
+<p>The aim is to test each of the services in such a way that the only thing changing is the service being hit. The following items need to be the same (or as close as possible):</p>
+<ul>
+<li>the code in the service</li>
+<li>the service machine size</li>
+<li>the service configuration</li>
+<li>the app making the requests and source computer</li>
+</ul>
+<section id="test-app" class="level3">
+<h3 class="anchored" data-anchor-id="test-app">Test App</h3>
+<p>I created a basic “hello world” app in nodejs for each of the different services where the app responds to web requests with “Hello, World!”. This should allow a baseline request throughput to be determined since the apps aren’t handling authentication, hitting external services, or doing any complex computation.</p>
+</section>
+<section id="serverless-parity" class="level3">
+<h3 class="anchored" data-anchor-id="serverless-parity">Serverless Parity</h3>
+<p>The app needs to be running at parity in each of the serverless services to eliminate differences in hardware and configuration from the throughput results. To get the services in parity, the memory, cpu, app concurrency, and app scaling amount need to be the same.</p>
+<section id="basics" class="level4">
+<h4 class="anchored" data-anchor-id="basics">Basics</h4>
+<p>Since this is a nodejs app and nodejs is single threaded, only one cpu (max) is needed. Also, since the app doesn’t do any waiting on external services, concurrency wouldn’t help. This means that only single concurrency is needed (concurrency meaning how many requests can be handled by the app at the same time).</p>
+<p>This experiment is really to determine a baseline for these services, so app scaling should be minimized to only allow for a single instance. App scaling can be experimented on at a different time.</p>
+<p>This leaves memory size and max CPU to be figured out for parity.</p>
+</section>
+<section id="cloud-run" class="level4">
+<h4 class="anchored" data-anchor-id="cloud-run">Cloud Run</h4>
+<p>Cloud Run configuration reference: <a href="https://cloud.google.com/run/docs/configuring/services/cpu">https://cloud.google.com/run/docs/configuring/services/cpu</a></p>
+<p>Cloud Run needs a minimum of 1 CPU to allow for more concurrency. This isn’t really helpful for this experiment, but it will be very useful in upcoming experiments. Lets choose 1 CPU which will give a better baseline for future experiments.</p>
+<p>Based on the selections for the other services, a memory size of “2 GiB” will be chosen.</p>
+</section>
+<section id="cloud-functions" class="level4">
+<h4 class="anchored" data-anchor-id="cloud-functions">Cloud Functions</h4>
+<p>Cloud Functions configuration reference: <a href="https://cloud.google.com/functions/docs/configuring">https://cloud.google.com/functions/docs/configuring</a></p>
+<p>Cloud Functions 1st gen only allows for a configuration of memory which then determines the CPU. Choosing “2048MB” for Cloud Functions 1st gen gives 1 CPU.</p>
+<p>A memory size of “2 GiB” and 1 CPU was chosen for Cloud Functions 2nd gen.</p>
+</section>
+<section id="app-engine" class="level4">
+<h4 class="anchored" data-anchor-id="app-engine">App Engine</h4>
+<p>App Engine vs Cloud Run configuration reference: <a href="https://cloud.google.com/appengine/migration-center/run/compare-gae-with-run">https://cloud.google.com/appengine/migration-center/run/compare-gae-with-run</a></p>
+<p>Choosing an “Instance Class” for App Engine sets the memory and CPU. An instance class of “F4” sets 1 CPU and 1.5GB of memory which should be close enough for this experiment.</p>
+</section>
+</section>
+<section id="request-throughput" class="level3">
+<h3 class="anchored" data-anchor-id="request-throughput">Request Throughput</h3>
+<p>There are many ways that request throughput could be determined, but I was most interested in the end-user experience. So, my decisions stemmed from that perspective.</p>
+<p>I would like to hear your thoughts if you would have made different decisions or if you have a different method for determining baselines.</p>
+<section id="artillery-vs-hey" class="level4">
+<h4 class="anchored" data-anchor-id="artillery-vs-hey">Artillery vs Hey</h4>
+<p>Artillery: <a href="https://www.artillery.io/docs">https://www.artillery.io/docs</a></p>
+<p>Hey: <a href="https://github.com/rakyll/hey">https://github.com/rakyll/hey</a></p>
+<p>I experimented with two different programs that slam endpoints with requests: Artillery and Hey. These programs are run from the computer and location where you want to see response and latency. Both of them worked for this experiment, but I found that Hey’s output was easier to see differences in the response latency distribution.</p>
+</section>
+<section id="latency-distribution" class="level4">
+<h4 class="anchored" data-anchor-id="latency-distribution">Latency Distribution</h4>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/hey.png" class="img-fluid figure-img" style="width:70.0%"></p>
+<figcaption class="figure-caption">Hey - Sample Output. 1. Shows the “requests per second”. 2. Shows the latency of requests per some amount of time. 3. Shows the number of successful responses.</figcaption>
+</figure>
+</div>
+<p>I played with several methods of trying to find request throughput, but ultimately I ended up settling on trying to get 95% of the requests under 100 ms and then using that to find the request throughput. Aiming for 99% of the requests to be under a threshold gave too much variability while 95% was fairly stable.</p>
+</section>
+</section>
+</section>
+<section id="experiment" class="level2">
+<h2 class="anchored" data-anchor-id="experiment">Experiment</h2>
+<p>The source code is available here: <a href="https://github.com/CaseyHaralson/cloud-report/tree/001/experiment/001_compareGCPServerless">project setup and services creation code</a></p>
+<p>Steps:</p>
+<ol type="1">
+<li><p>Each of the serverless services is loaded with, basically, the same “hello world” app. The services need slightly different boilerplate code, but ultimately the code we are testing is the same.</p></li>
+<li><p>Each of the serverless services is set to 1 CPU, 1 concurrency, 1 max instance, and around 2 GB of memory.</p></li>
+<li><p>Each service is hit a few times to make sure the service is up and ready.</p></li>
+<li><p>“Hey” is used to generate 5,000 requests with some amount of concurrent requests. The number of overall requests was picked to minimize outlier request responses.</p></li>
+<li><p>The amount of concurrent requests from “Hey” is changed until 95% of the request responses are under 100 ms.</p></li>
+<li><p>Once a good result is achieved, the test is run 3 or 4 times to make sure the result is stable and then the best stable result is taken.</p></li>
+</ol>
+</section>
+<section id="experiment-results" class="level2">
+<h2 class="anchored" data-anchor-id="experiment-results">Experiment Results</h2>
+<p>I’ve run these experiments twice: once six months ago and once again this week. The results were similar during both runs with the exception of Cloud Functions 1st Gen doing a bit better this time than the first time I ran the experiment.</p>
+<section id="app-engine-1" class="level3">
+<h3 class="anchored" data-anchor-id="app-engine-1">App Engine</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/result - app engine - hey 20 concurrency.PNG" class="img-fluid figure-img" style="width:70.0%"></p>
+<figcaption class="figure-caption">App Engine Results</figcaption>
+</figure>
+</div>
+<p>App Engine was able to achieve ~340 requests per second with a Hey concurrency of 20 requests at a time.</p>
+</section>
+<section id="cloud-functions-1st-gen" class="level3">
+<h3 class="anchored" data-anchor-id="cloud-functions-1st-gen">Cloud Functions 1st Gen</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/result - cloud functions v1 - hey 20 concurrency.PNG" class="img-fluid figure-img" style="width:70.0%"></p>
+<figcaption class="figure-caption">Cloud Functions 1st Gen Results</figcaption>
+</figure>
+</div>
+<p>Cloud Functions 1st Gen was able to achieve ~300 requests per second with a Hey concurrency of 20 requests at a time.</p>
+</section>
+<section id="cloud-functions-2nd-gen" class="level3">
+<h3 class="anchored" data-anchor-id="cloud-functions-2nd-gen">Cloud Functions 2nd Gen</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/result - cloud functions v2 - hey 20 concurrency.PNG" class="img-fluid figure-img" style="width:70.0%"></p>
+<figcaption class="figure-caption">Cloud Functions 2nd Gen Results</figcaption>
+</figure>
+</div>
+<p>Cloud Functions 2nd Gen was able to achieve ~320 requests per second with a Hey concurrency of 20 requests at a time.</p>
+</section>
+<section id="cloud-run-1" class="level3">
+<h3 class="anchored" data-anchor-id="cloud-run-1">Cloud Run</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/result - cloud run - hey 25 concurrency.PNG" class="img-fluid figure-img" style="width:70.0%"></p>
+<figcaption class="figure-caption">Cloud Run Results</figcaption>
+</figure>
+</div>
+<p>Cloud Run was able to achieve ~440 requests per second with a Hey concurrency of 25 requests at a time.</p>
+</section>
+<section id="normalized-results" class="level3">
+<h3 class="anchored" data-anchor-id="normalized-results">Normalized Results</h3>
+<p>Cloud Run was able to give the best request throughput, so taking that as the index gives the following results:</p>
+<table class="table-striped table">
+<caption>Service Request Throughput Results Indexed To The Top Performer</caption>
+<thead>
+<tr class="header">
+<th>Service</th>
+<th style="text-align: right;">Requests/sec</th>
+<th style="text-align: right;">% of Index</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Cloud Run</td>
+<td style="text-align: right;">441</td>
+<td style="text-align: right;">100.0%</td>
+</tr>
+<tr class="even">
+<td>App Engine</td>
+<td style="text-align: right;">341</td>
+<td style="text-align: right;">77.3%</td>
+</tr>
+<tr class="odd">
+<td>Cloud Functions 2nd Gen</td>
+<td style="text-align: right;">318</td>
+<td style="text-align: right;">72.1%</td>
+</tr>
+<tr class="even">
+<td>Cloud Functions 1st Gen</td>
+<td style="text-align: right;">298</td>
+<td style="text-align: right;">67.6%</td>
+</tr>
+</tbody>
+</table>
+<p>These normalized results should be more helpful in determining relative throughput between the different services than the actual requests per second values. While the distance to the cloud data center or a different programming language might change the real throughput, the relative throughput should give a good idea of what to expect between the services.</p>
+</section>
+<section id="verifying-results" class="level3">
+<h3 class="anchored" data-anchor-id="verifying-results">Verifying Results</h3>
+<section id="results-from-another-location" class="level4">
+<h4 class="anchored" data-anchor-id="results-from-another-location">Results From Another Location</h4>
+<p>I reran the experiment from another state in the U.S. to the same data center and got similar results.</p>
+<p>Cloud Functions 1st Gen had the most variability (~242 requests/sec to begin with) before stabilizing around a similar response throughput as the above results.</p>
+<table class="table-striped table-sm small table">
+<caption>Service Request Throughput Results Indexed To The Top Performer</caption>
+<thead>
+<tr class="header">
+<th>Service</th>
+<th style="text-align: right;">Requests/sec</th>
+<th style="text-align: right;">% of Index</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Cloud Run</td>
+<td style="text-align: right;">452</td>
+<td style="text-align: right;">100.0%</td>
+</tr>
+<tr class="even">
+<td>App Engine</td>
+<td style="text-align: right;">354</td>
+<td style="text-align: right;">78.3%</td>
+</tr>
+<tr class="odd">
+<td>Cloud Functions 2nd Gen</td>
+<td style="text-align: right;">336</td>
+<td style="text-align: right;">74.3%</td>
+</tr>
+<tr class="even">
+<td>Cloud Functions 1st Gen</td>
+<td style="text-align: right;">304</td>
+<td style="text-align: right;">67.3%</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="extra-app-concurrency" class="level4">
+<h4 class="anchored" data-anchor-id="extra-app-concurrency">Extra App Concurrency</h4>
+<p>I did try allowing the services to handle extra concurrency but the app would thrash between handling incoming requests and handling the current request (nodejs is single threaded). Overall this just slowed down the app request throughput.</p>
+</section>
+<section id="more-cpu" class="level4">
+<h4 class="anchored" data-anchor-id="more-cpu">More CPU</h4>
+<p>I also tested adding more CPUs to the services to see if that had any unexpected effects, but that didn’t change the result.</p>
+</section>
+</section>
+</section>
+<section id="developer-experience" class="level2">
+<h2 class="anchored" data-anchor-id="developer-experience">Developer Experience</h2>
+<section id="app-engine-2" class="level3">
+<h3 class="anchored" data-anchor-id="app-engine-2">App Engine</h3>
+<p>App Engine gave the worst developer experience of the four services:</p>
+<ul>
+<li>To enable App Engine, you must have “project owner” permissions.</li>
+<li>The service can only be enabled once per project and in only one region. To enable the service in more than one region requires a project to be created per region.</li>
+<li>The first app that is created in App Engine has to be called “default”. And this app can’t be deleted after creation, so Terraform can’t clean this up.</li>
+<li>App Engine can’t be turned off or deleted after it is turned on in a project. The project has to be deleted to clean up App Engine.</li>
+<li>In Terraform, you must include the runtime and entrypoint even though they are already defined in the app’s app.yaml file.</li>
+<li>In Terraform, you have to manually version the app and this is difficult to automate.</li>
+<li>In Terraform, there isn’t a way to get the app url. The app url has to be manually calculated with the App Engine’s location code being hardcoded.</li>
+</ul>
+<p>Some other notes about App Engine that are more neutral:</p>
+<ul>
+<li>The apps are public to the internet by default. The other services (Cloud Functions and Cloud Run) had to have a role binding applied to allow anonymous access.</li>
+<li>Google has a comment in the App Engine vs Cloud Run comparison document that says they took what they learned from App Engine and put it into Cloud Run. And, that they made Cloud Run integrate with more services than with App Engine.</li>
+</ul>
+</section>
+<section id="cloud-functions-1" class="level3">
+<h3 class="anchored" data-anchor-id="cloud-functions-1">Cloud Functions</h3>
+<p>The Cloud Functions developer experience was pretty much exactly as expected (which is good). The following notes are things that stood out.</p>
+<p>Cloud Functions 1st Gen:</p>
+<ul>
+<li>There isn’t a way to control the CPU count directly. The CPU count is controlled by the amount of memory.</li>
+<li>Each function can only handle 1 concurrent request at a time.</li>
+</ul>
+<p>Cloud Functions 2nd Gen:</p>
+<ul>
+<li>The 2nd generation of Cloud Functions fixed the problems with the 1st gen.</li>
+<li>The 2nd gen is actually using Cloud Run behind the scenes.</li>
+</ul>
+<p>Cloud Functions (both generations) do have a potential negative, but I didn’t run into it during this experiment:</p>
+<ul>
+<li>Each function can only have one trigger. Multiple functions would have to be created to handle different triggering events even if the code to run was the same for each event.</li>
+</ul>
+</section>
+<section id="cloud-run-2" class="level3">
+<h3 class="anchored" data-anchor-id="cloud-run-2">Cloud Run</h3>
+<p>Cloud Run had the best developer experience. Since this service just runs a container, there is no special code or language required.</p>
+<p>The only notes I would add deal with how the container is created and loaded into the Cloud Run service:</p>
+<ul>
+<li>There is no way to submit code to Cloud Run directly from Terraform and no way to trigger Cloud Build to then submit the code to the service from Terraform. This typically wouldn’t be a problem in a normal development scenario because an external pipeline would be setup to maintain the service with the correct code. But, I didn’t want that overhead for these test experiments, so I had to create a script step to run the build and then deploy the container to Cloud Run after Terraform was applied.</li>
+<li>Cloud Run can’t be created without an initial container image, and because of the specifics of this test environment, the initial container was set to a default Google container which was replaced later in a script step after Terraform was applied.</li>
+<li>Cloud Build can’t be told where the Dockerfile is, so the app Dockerfile had to live in the root app folder instead of in a devops folder or somewhere more appropriate. There is a way to specify Dockerfile locations with a cloudbuild.yaml file, but this requires including special code (the cloudbuild.yaml file) which wasn’t appealing.</li>
+</ul>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Cloud Run has the best request throughput and developer experience of the different services. Cloud Functions (2nd gen) is using Cloud Run behind the scenes, and App Engine was taken as a lesson while building Cloud Run.</p>
+<p>Based on these findings, Cloud Run is the clear favorite.</p>
+</section>
+<section id="comments" class="level2">
+<h2 class="anchored" data-anchor-id="comments">Comments</h2>
+<p>Leave a comment:</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="CaseyHaralson/blog" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
