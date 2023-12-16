@@ -138,6 +138,12 @@ ul.task-list li input[type="checkbox"] {
       </div>
     </div>
     
+      <div>
+      <div class="quarto-title-meta-heading">Modified</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date-modified">December 16, 2023</p>
+      </div>
+    </div>
       
     </div>
     
@@ -164,8 +170,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#cloud-functions-1st-gen" id="toc-cloud-functions-1st-gen" class="nav-link" data-scroll-target="#cloud-functions-1st-gen">Cloud Functions 1st Gen</a></li>
   <li><a href="#cloud-functions-2nd-gen" id="toc-cloud-functions-2nd-gen" class="nav-link" data-scroll-target="#cloud-functions-2nd-gen">Cloud Functions 2nd Gen</a></li>
   <li><a href="#cloud-run-1" id="toc-cloud-run-1" class="nav-link" data-scroll-target="#cloud-run-1">Cloud Run</a></li>
-  <li><a href="#normalized-results" id="toc-normalized-results" class="nav-link" data-scroll-target="#normalized-results">Normalized Results</a></li>
-  <li><a href="#verifying-results" id="toc-verifying-results" class="nav-link" data-scroll-target="#verifying-results">Verifying Results</a></li>
+  <li><a href="#compiled-results" id="toc-compiled-results" class="nav-link" data-scroll-target="#compiled-results">Compiled Results</a></li>
   </ul></li>
   <li><a href="#developer-experience" id="toc-developer-experience" class="nav-link" data-scroll-target="#developer-experience">Developer Experience</a>
   <ul class="collapse">
@@ -173,7 +178,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#cloud-functions-1" id="toc-cloud-functions-1" class="nav-link" data-scroll-target="#cloud-functions-1">Cloud Functions</a></li>
   <li><a href="#cloud-run-2" id="toc-cloud-run-2" class="nav-link" data-scroll-target="#cloud-run-2">Cloud Run</a></li>
   </ul></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#final-thoughts" id="toc-final-thoughts" class="nav-link" data-scroll-target="#final-thoughts">Final Thoughts</a></li>
   <li><a href="#comments" id="toc-comments" class="nav-link" data-scroll-target="#comments">Comments</a></li>
   </ul>
 </nav>
@@ -184,11 +189,16 @@ ul.task-list li input[type="checkbox"] {
 
 
 
+<p><strong>Updates:</strong></p>
+<ul>
+<li>The method for calculating throughput was changed to use multiple longer duration tests.</li>
+<li>When testing Cloud Run and Cloud Functions 2nd gen, these services originally reported very good results but this was probably due to multiple instances being available. I haven’t been able to reproduce multiple instances being created, but did check to make sure that only one instance was available during the updated tests.</li>
+</ul>
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>Google Cloud has several serverless offerings for handling web requests: App Engine, Cloud Functions, and Cloud Run. In this article I would like to compare the request throughput between these offerings and explore the developer experience in working with these offerings.</p>
-<p><strong>App Engine</strong> is an easy way to create web applications without having to worry about things like databases, authentication, web servers, etc.</p>
-<p><strong>Cloud Functions</strong> runs specific code (a function) whenever a specified event happens. You can set the function to trigger on a web request or an event from a message bus. There are also two different versions of Cloud Functions: 1st gen and 2nd gen. This article will compare both.</p>
+<p>Google Cloud has several serverless offerings for handling web requests: App Engine, Cloud Functions, and Cloud Run. In this article I would like to compare the base request throughput between these offerings and explore the developer experience in working with these services.</p>
+<p><strong>App Engine</strong> is an easy way to create web applications without having to worry about things like databases, authentication, web servers, etc. This is an older service and probably shouldn’t be used for new projects. It is being included to see how things are evolving.</p>
+<p><strong>Cloud Functions</strong> runs specific code (a function) whenever a specified event happens. The function can be set to trigger on a web request or an event from a message bus. There are two different versions of Cloud Functions (1st and 2nd gen) and this article will compare both.</p>
 <p><strong>Cloud Run</strong> is a service that runs containerized code. This could be anything from a website to a machine learning model.</p>
 <p>Serverless basically means that you don’t have to worry about hardware provisioning, software updating, etc. and you get flexible scalability. These services can scale to zero to minimize cost when no work needs to be done and can scale up “infinitely” when any amount of work needs to be done.</p>
 </section>
@@ -210,7 +220,8 @@ ul.task-list li input[type="checkbox"] {
 <p>The app needs to be running at parity in each of the serverless services to eliminate differences in hardware and configuration from the throughput results. To get the services in parity, the memory, cpu, app concurrency, and app scaling amount need to be the same.</p>
 <section id="basics" class="level4">
 <h4 class="anchored" data-anchor-id="basics">Basics</h4>
-<p>Since this is a nodejs app and nodejs is single threaded, only one cpu (max) is needed. Also, since the app doesn’t do any waiting on external services, concurrency wouldn’t help. This means that only single concurrency is needed (concurrency meaning how many requests can be handled by the app at the same time).</p>
+<p>Since this is a nodejs app and nodejs is single threaded, only one cpu (max) is needed.</p>
+<p>Cloud Functions 1st gen can only support one concurrent request at a time, so single concurrency should be chosen to allow for a fair comparison with the other services. Multiple concurrency can be experimented with at a different time.</p>
 <p>This experiment is really to determine a baseline for these services, so app scaling should be minimized to only allow for a single instance. App scaling can be experimented on at a different time.</p>
 <p>This leaves memory size and max CPU to be figured out for parity.</p>
 </section>
@@ -218,13 +229,13 @@ ul.task-list li input[type="checkbox"] {
 <h4 class="anchored" data-anchor-id="cloud-run">Cloud Run</h4>
 <p>Cloud Run configuration reference: <a href="https://cloud.google.com/run/docs/configuring/services/cpu">https://cloud.google.com/run/docs/configuring/services/cpu</a></p>
 <p>Cloud Run needs a minimum of 1 CPU to allow for more concurrency. This isn’t really helpful for this experiment, but it will be very useful in upcoming experiments. Lets choose 1 CPU which will give a better baseline for future experiments.</p>
-<p>Based on the selections for the other services, a memory size of “2 GiB” will be chosen.</p>
+<p>Based on the selections for the other services, a memory size of “2 GiB” was chosen.</p>
 </section>
 <section id="cloud-functions" class="level4">
 <h4 class="anchored" data-anchor-id="cloud-functions">Cloud Functions</h4>
 <p>Cloud Functions configuration reference: <a href="https://cloud.google.com/functions/docs/configuring">https://cloud.google.com/functions/docs/configuring</a></p>
 <p>Cloud Functions 1st gen only allows for a configuration of memory which then determines the CPU. Choosing “2048MB” for Cloud Functions 1st gen gives 1 CPU.</p>
-<p>A memory size of “2 GiB” and 1 CPU was chosen for Cloud Functions 2nd gen.</p>
+<p>A memory size of “2 GiB” and 1 CPU was chosen for Cloud Functions 2nd gen so it matches with the other services.</p>
 </section>
 <section id="app-engine" class="level4">
 <h4 class="anchored" data-anchor-id="app-engine">App Engine</h4>
@@ -234,23 +245,34 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="request-throughput" class="level3">
 <h3 class="anchored" data-anchor-id="request-throughput">Request Throughput</h3>
-<p>There are many ways that request throughput could be determined, but I was most interested in the end-user experience. So, my decisions stemmed from that perspective.</p>
-<p>I would like to hear your thoughts if you would have made different decisions or if you have a different method for determining baselines.</p>
-<section id="artillery-vs-hey" class="level4">
-<h4 class="anchored" data-anchor-id="artillery-vs-hey">Artillery vs Hey</h4>
-<p>Artillery: <a href="https://www.artillery.io/docs">https://www.artillery.io/docs</a></p>
+<p>There are a few ways that request throughput could be determined, but I was most interested in the end-user experience. This means that internal service metrics couldn’t be used and that a load generator of some sort should be used.</p>
+<section id="hey" class="level4">
+<h4 class="anchored" data-anchor-id="hey">Hey</h4>
 <p>Hey: <a href="https://github.com/rakyll/hey">https://github.com/rakyll/hey</a></p>
-<p>I experimented with two different programs that slam endpoints with requests: Artillery and Hey. These programs are run from the computer and location where you want to see response and latency. Both of them worked for this experiment, but I found that Hey’s output was easier to see differences in the response latency distribution.</p>
+<p>I experimented with several programs that slam endpoints with requests, but ultimately ended up sticking with a program called “Hey”. I found that Hey’s output was easiest to see differences in the response latency distribution, and it could send a certain number of requests for quick testing or send requests for a specific amount of time for longer tests.</p>
+<p>This program runs from one computer (destination) and hits the target server with requests. This will give us the request throughput that the server can deliver to the destination computer.</p>
 </section>
 <section id="latency-distribution" class="level4">
 <h4 class="anchored" data-anchor-id="latency-distribution">Latency Distribution</h4>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="./images/hey.png" class="img-fluid figure-img" style="width:70.0%"></p>
+<p><img src="./images/hey.png" class="img-fluid figure-img"></p>
 <figcaption class="figure-caption">Hey - Sample Output. 1. Shows the “requests per second”. 2. Shows the latency of requests per some amount of time. 3. Shows the number of successful responses.</figcaption>
 </figure>
 </div>
-<p>I played with several methods of trying to find request throughput, but ultimately I ended up settling on trying to get 95% of the requests under 100 ms and then using that to find the request throughput. Aiming for 99% of the requests to be under a threshold gave too much variability while 95% was fairly stable.</p>
+<p>I played with several methods of trying to find request throughput, but ultimately ended up settling on trying to get 95% of the requests under 100 ms and then using that to find the request throughput. Aiming for 99% of the requests to be under a threshold gave too much variability while 95% was “fairly stable”.</p>
+</section>
+<section id="calculating-throughput" class="level4">
+<h4 class="anchored" data-anchor-id="calculating-throughput">Calculating Throughput</h4>
+<p>Even with targeting results where 95% of the requests come back in under 100 ms, there was still quite a bit of variability between the throughput in each run. I think the best that can be done is run a sustained load test multiple times to try and find an average with some error percentage.</p>
+<p>The service should also be “warm” (one instance should already be active and ready to accept requests) so service startup times aren’t included in the request throughput calculations. Service startup times could be explored in another experiment.</p>
+</section>
+<section id="load-generating-destination-computer" class="level4">
+<h4 class="anchored" data-anchor-id="load-generating-destination-computer">Load Generating (Destination) Computer</h4>
+<p>To limit network effects from impacting the results, I chose to use a GCP Cloud Shell to generate the load. This puts the load generating computer within Google’s network and close to the services.</p>
+<p>Cloud Shell Instance: <a href="https://shell.cloud.google.com/?show=terminal">https://shell.cloud.google.com/?show=terminal</a></p>
+<p>Install Hey: <code>sudo apt install hey</code></p>
+<p>To check the Cloud Shell region/zone: <code>curl -H "Metadata-Flavor: Google" metadata/computeMetadata/v1/instance/zone</code></p>
 </section>
 </section>
 </section>
@@ -261,139 +283,222 @@ ul.task-list li input[type="checkbox"] {
 <ol type="1">
 <li><p>Each of the serverless services is loaded with, basically, the same “hello world” app. The services need slightly different boilerplate code, but ultimately the code we are testing is the same.</p></li>
 <li><p>Each of the serverless services is set to 1 CPU, 1 concurrency, 1 max instance, and around 2 GB of memory.</p></li>
-<li><p>Each service is hit a few times to make sure the service is up and ready.</p></li>
-<li><p>“Hey” is used to generate 5,000 requests with some amount of concurrent requests. The number of overall requests was picked to minimize outlier request responses.</p></li>
-<li><p>The amount of concurrent requests from “Hey” is changed until 95% of the request responses are under 100 ms.</p></li>
-<li><p>Once a good result is achieved, the test is run 3 or 4 times to make sure the result is stable and then the best stable result is taken.</p></li>
+<li><p>“Hey” is used to quickly find the amount of concurrent requests that will lead to 95% of requests returning in under 100 ms. This is repeated until a semi stable result is found per service.</p>
+<ul>
+<li><code>hey -n 500 -c [concurrency] [service url]</code></li>
+</ul></li>
+<li><p>“Hey” is run for a longer duration (5 minutes) to find the throughput per service. This is repeated five times per service to find the average and error percentage.</p>
+<ul>
+<li><code>hey -z 5m -c [found concurrency] [service url]</code></li>
+</ul></li>
 </ol>
 </section>
 <section id="experiment-results" class="level2">
 <h2 class="anchored" data-anchor-id="experiment-results">Experiment Results</h2>
-<p>I’ve run these experiments twice: once six months ago and once again this week. The results were similar during both runs with the exception of Cloud Functions 1st Gen doing a bit better this time than the first time I ran the experiment.</p>
 <section id="app-engine-1" class="level3">
 <h3 class="anchored" data-anchor-id="app-engine-1">App Engine</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="./images/result - app engine - hey 20 concurrency.PNG" class="img-fluid figure-img" style="width:70.0%"></p>
-<figcaption class="figure-caption">App Engine Results</figcaption>
+<p><img src="./images/result - app engine - hey 5m 20 concurrency.PNG" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">App Engine Results - First Run</figcaption>
 </figure>
 </div>
-<p>App Engine was able to achieve ~340 requests per second with a Hey concurrency of 20 requests at a time.</p>
+<table class="table-striped table-sm small table">
+<caption>App Engine Throughput Results</caption>
+<thead>
+<tr class="header">
+<th>Run</th>
+<th>Requests/sec</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>388</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>454</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>421</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>408</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>311</td>
+</tr>
+</tbody>
+</table>
+<p><strong>App Engine</strong> was able to achieve <strong>an average of 396 requests per second (+- 21%)</strong> with a Hey concurrency of 20 requests at a time.</p>
 </section>
 <section id="cloud-functions-1st-gen" class="level3">
 <h3 class="anchored" data-anchor-id="cloud-functions-1st-gen">Cloud Functions 1st Gen</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="./images/result - cloud functions v1 - hey 20 concurrency.PNG" class="img-fluid figure-img" style="width:70.0%"></p>
-<figcaption class="figure-caption">Cloud Functions 1st Gen Results</figcaption>
+<p><img src="./images/result - cloud functions v1 - hey 5m 15 concurrency.PNG" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Cloud Functions 1st Gen Results - First Run</figcaption>
 </figure>
 </div>
-<p>Cloud Functions 1st Gen was able to achieve ~300 requests per second with a Hey concurrency of 20 requests at a time.</p>
+<table class="table-striped table-sm small table">
+<caption>Cloud Functions 1st Gen Throughput Results</caption>
+<thead>
+<tr class="header">
+<th>Run</th>
+<th>Requests/sec</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>286</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>301</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>301</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>298</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>305</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cloud Functions 1st gen</strong> was able to achieve <strong>an average of 298 requests per second (+- 4%)</strong> with a Hey concurrency of 15 requests at a time.</p>
 </section>
 <section id="cloud-functions-2nd-gen" class="level3">
 <h3 class="anchored" data-anchor-id="cloud-functions-2nd-gen">Cloud Functions 2nd Gen</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="./images/result - cloud functions v2 - hey 20 concurrency.PNG" class="img-fluid figure-img" style="width:70.0%"></p>
-<figcaption class="figure-caption">Cloud Functions 2nd Gen Results</figcaption>
+<p><img src="./images/result - cloud functions v2 - hey 5m 15 concurrency.PNG" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Cloud Functions 2nd Gen Results - First Run</figcaption>
 </figure>
 </div>
-<p>Cloud Functions 2nd Gen was able to achieve ~320 requests per second with a Hey concurrency of 20 requests at a time.</p>
+<table class="table-striped table-sm small table">
+<caption>Cloud Functions 2nd Gen Throughput Results</caption>
+<thead>
+<tr class="header">
+<th>Run</th>
+<th>Requests/sec</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>190</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>219</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>219</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>221</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>216</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cloud Functions 2nd gen</strong> was able to achieve <strong>an average of 213 requests per second (+- 10%)</strong> with a Hey concurrency of 15 requests at a time.</p>
 </section>
 <section id="cloud-run-1" class="level3">
 <h3 class="anchored" data-anchor-id="cloud-run-1">Cloud Run</h3>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="./images/result - cloud run - hey 25 concurrency.PNG" class="img-fluid figure-img" style="width:70.0%"></p>
-<figcaption class="figure-caption">Cloud Run Results</figcaption>
+<p><img src="./images/result - cloud run - hey 5m 15 concurrency.PNG" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Cloud Run Results - First Run</figcaption>
 </figure>
 </div>
-<p>Cloud Run was able to achieve ~440 requests per second with a Hey concurrency of 25 requests at a time.</p>
-</section>
-<section id="normalized-results" class="level3">
-<h3 class="anchored" data-anchor-id="normalized-results">Normalized Results</h3>
-<p>Cloud Run was able to give the best request throughput, so taking that as the index gives the following results:</p>
-<table class="table-striped table">
-<caption>Service Request Throughput Results Indexed To The Top Performer</caption>
+<table class="table-striped table-sm small table">
+<caption>Cloud Run Throughput Results</caption>
 <thead>
 <tr class="header">
-<th>Service</th>
-<th style="text-align: right;">Requests/sec</th>
-<th style="text-align: right;">% of Index</th>
+<th>Run</th>
+<th>Requests/sec</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Cloud Run</td>
-<td style="text-align: right;">441</td>
-<td style="text-align: right;">100.0%</td>
+<td>1</td>
+<td>262</td>
 </tr>
 <tr class="even">
-<td>App Engine</td>
-<td style="text-align: right;">341</td>
-<td style="text-align: right;">77.3%</td>
+<td>2</td>
+<td>190</td>
 </tr>
 <tr class="odd">
-<td>Cloud Functions 2nd Gen</td>
-<td style="text-align: right;">318</td>
-<td style="text-align: right;">72.1%</td>
+<td>3</td>
+<td>216</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>213</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>216</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cloud Run</strong> was able to achieve <strong>an average of 219 requests per second (+- 20%)</strong> with a Hey concurrency of 15 requests at a time.</p>
+</section>
+<section id="compiled-results" class="level3">
+<h3 class="anchored" data-anchor-id="compiled-results">Compiled Results</h3>
+<p>These are the throughput results for each service at 1 CPU, 1 concurrency, 1 instance, and around 2 GB of memory:</p>
+<table class="table-striped table">
+<caption>Service Request Average Throughput, Deviation, and Rough Possible Range</caption>
+<thead>
+<tr class="header">
+<th>Service</th>
+<th style="text-align: right;">Average Requests/sec</th>
+<th style="text-align: right;">+- % Deviation</th>
+<th style="text-align: right;">~ Possible Range</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>App Engine</td>
+<td style="text-align: right;">396</td>
+<td style="text-align: right;">21%</td>
+<td style="text-align: right;">313 - 479 req/s</td>
 </tr>
 <tr class="even">
 <td>Cloud Functions 1st Gen</td>
 <td style="text-align: right;">298</td>
-<td style="text-align: right;">67.6%</td>
+<td style="text-align: right;">4%</td>
+<td style="text-align: right;">286 - 310 req/s</td>
 </tr>
-</tbody>
-</table>
-<p>These normalized results should be more helpful in determining relative throughput between the different services than the actual requests per second values. While the distance to the cloud data center or a different programming language might change the real throughput, the relative throughput should give a good idea of what to expect between the services.</p>
-</section>
-<section id="verifying-results" class="level3">
-<h3 class="anchored" data-anchor-id="verifying-results">Verifying Results</h3>
-<section id="results-from-another-location" class="level4">
-<h4 class="anchored" data-anchor-id="results-from-another-location">Results From Another Location</h4>
-<p>I reran the experiment from another state in the U.S. to the same data center and got similar results.</p>
-<p>Cloud Functions 1st Gen had the most variability (~242 requests/sec to begin with) before stabilizing around a similar response throughput as the above results.</p>
-<table class="table-striped table-sm small table">
-<caption>Service Request Throughput Results Indexed To The Top Performer</caption>
-<thead>
-<tr class="header">
-<th>Service</th>
-<th style="text-align: right;">Requests/sec</th>
-<th style="text-align: right;">% of Index</th>
-</tr>
-</thead>
-<tbody>
 <tr class="odd">
 <td>Cloud Run</td>
-<td style="text-align: right;">452</td>
-<td style="text-align: right;">100.0%</td>
+<td style="text-align: right;">219</td>
+<td style="text-align: right;">20%</td>
+<td style="text-align: right;">175 - 263 req/s</td>
 </tr>
 <tr class="even">
-<td>App Engine</td>
-<td style="text-align: right;">354</td>
-<td style="text-align: right;">78.3%</td>
-</tr>
-<tr class="odd">
 <td>Cloud Functions 2nd Gen</td>
-<td style="text-align: right;">336</td>
-<td style="text-align: right;">74.3%</td>
-</tr>
-<tr class="even">
-<td>Cloud Functions 1st Gen</td>
-<td style="text-align: right;">304</td>
-<td style="text-align: right;">67.3%</td>
+<td style="text-align: right;">213</td>
+<td style="text-align: right;">10%</td>
+<td style="text-align: right;">192 - 234 req/s</td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="extra-app-concurrency" class="level4">
-<h4 class="anchored" data-anchor-id="extra-app-concurrency">Extra App Concurrency</h4>
-<p>I did try allowing the services to handle extra concurrency but the app would thrash between handling incoming requests and handling the current request (nodejs is single threaded). Overall this just slowed down the app request throughput.</p>
-</section>
-<section id="more-cpu" class="level4">
-<h4 class="anchored" data-anchor-id="more-cpu">More CPU</h4>
-<p>I also tested adding more CPUs to the services to see if that had any unexpected effects, but that didn’t change the result.</p>
-</section>
 </section>
 </section>
 <section id="developer-experience" class="level2">
@@ -445,10 +550,10 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 </section>
 </section>
-<section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>Cloud Run has the best request throughput and developer experience of the different services. Cloud Functions (2nd gen) is using Cloud Run behind the scenes, and App Engine was taken as a lesson while building Cloud Run.</p>
-<p>Based on these findings, Cloud Run is the clear favorite.</p>
+<section id="final-thoughts" class="level2">
+<h2 class="anchored" data-anchor-id="final-thoughts">Final Thoughts</h2>
+<p>I was shocked to find how inconsistent the throughput results were when considering just a single service. It was painful to find anything close to consistency and to get results that could be compared between services.</p>
+<p>It was also interesting to see how each service compared when they were all dealing with the same limitation of single concurrency. I’m excited to see how each service handles concurrency and scaling.</p>
 </section>
 <section id="comments" class="level2">
 <h2 class="anchored" data-anchor-id="comments">Comments</h2>
