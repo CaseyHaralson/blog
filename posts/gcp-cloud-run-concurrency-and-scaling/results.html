@@ -1,0 +1,281 @@
+<html>
+  <head>
+    <style>
+      .result {
+        margin-top: 3rem;
+        margin-bottom: 3rem;
+        text-align: center;
+      }
+      .result strong {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        display: block;
+      }
+      .result img {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Cloud Run Concurrency and Scaling Characteristics - Experiment Results</h1>
+
+    <h2>Concurrency Experiments</h2>
+
+    <h3 id="cloud-run-max-concurrency-test">Max Concurrency Experiment</h3>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 80 Concurrency - 70 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/1 - cloud run 80 c - hey 5m 70c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/1 - cloud run 80 c - hey 5m 70c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 80 Concurrency - 60 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/2 - cloud run 80 c - hey 5m 60c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/2 - cloud run 80 c - hey 5m 60c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 80 Concurrency - 50 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/3 - cloud run 80 c - hey 5m 50c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/3 - cloud run 80 c - hey 5m 50c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 80 Concurrency - 40 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/4 - cloud run 80 c - hey 5m 40c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/4 - cloud run 80 c - hey 5m 40c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 80 Concurrency - 30 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/5 - cloud run 80 c - hey 5m 30c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/5 - cloud run 80 c - hey 5m 30c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 80 Concurrency - 20 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/6 - cloud run 80 c - hey 5m 20c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/6 - cloud run 80 c - hey 5m 20c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 80 Concurrency - 10 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/7 - cloud run 80 c - hey 5m 10c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/7 - cloud run 80 c - hey 5m 10c - metrics.PNG">
+    </div>
+
+    <h3 id="cloud-run-updated-max-concurrency-test">Max Concurrency Experiment Verification</h3>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 30 Concurrency - 50 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/8 - cloud run 30 c - hey 5m 50c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/8 - cloud run 30 c - hey 5m 50c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 30 Concurrency - 40 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/9 - cloud run 30 c - hey 5m 40c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/9 - cloud run 30 c - hey 5m 40c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 30 Concurrency - 30 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/10 - cloud run 30 c - hey 5m 30c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/10 - cloud run 30 c - hey 5m 30c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 30 Concurrency - 30 Hey Concurrency Over 5 Minutes - 2nd Run</strong>
+      <img src="images/concurrency experiments/10.1 - cloud run 30 c - hey 5m 30c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/10.1 - cloud run 30 c - hey 5m 30c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - Single Instance, 30 Concurrency - 20 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/concurrency experiments/11 - cloud run 30 c - hey 5m 20c.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/concurrency experiments/11 - cloud run 30 c - hey 5m 20c - metrics.PNG">
+    </div>
+  
+    <h2>Scaling Experiments</h2>
+
+    <h3 id="single-cold-instance-baseline">Single Instance Baseline Experiment</h3>
+    <div class="result">
+      <strong>Cloud Run - 1 Cold Instance, 30 Concurrency - 30 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/1 - cloud run 30c 1 instance - hey 5m 30c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/1 - cloud run 30c 1 instance - hey 5m 30c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/1 - cloud run 30c 1 instance - hey 5m 30c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - 1 Cold Instance, 30 Concurrency - 30 Hey Concurrency Over 5 Minutes - 2nd Run</strong>
+      <img src="images/scaling experiments/1.1 - cloud run 30c 1 instance - hey 5m 30c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/1.1 - cloud run 30c 1 instance - hey 5m 30c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/1.1 - cloud run 30c 1 instance - hey 5m 30c - metrics.PNG">
+    </div>
+
+    <h3 id="two-instances">Two Instances Experiment</h3>
+    <div class="result">
+      <strong>Cloud Run - 2 Cold Instances, 30 Concurrency - 30 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/2 - cloud run 30c 2 instance - hey 5m 30c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/2 - cloud run 30c 2 instance - hey 5m 30c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/2 - cloud run 30c 2 instance - hey 5m 30c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - 2 Cold Instances, 30 Concurrency - 60 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/4 - cloud run 30c 2 instance - hey 5m 60c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/4 - cloud run 30c 2 instance - hey 5m 60c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/4 - cloud run 30c 2 instance - hey 5m 60c - metrics.PNG">
+    </div>
+
+    <h3 id="three-instances">Three Instances Experiment</h3>
+    <div class="result">
+      <strong>Cloud Run - 3 Cold Instances, 30 Concurrency - 30 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/5a - cloud run 30c 3 instance - hey 5m 30c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/5a - cloud run 30c 3 instance - hey 5m 30c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/5a - cloud run 30c 3 instance - hey 5m 30c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - 3 Cold Instances, 30 Concurrency - 60 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/5b - cloud run 30c 3 instance - hey 5m 60c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/5b - cloud run 30c 3 instance - hey 5m 60c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/5b - cloud run 30c 3 instance - hey 5m 60c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - 3 Cold Instances, 30 Concurrency - 90 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/5c - cloud run 30c 3 instance - hey 5m 90c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/5c - cloud run 30c 3 instance - hey 5m 90c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/5c - cloud run 30c 3 instance - hey 5m 90c - metrics.PNG">
+    </div>
+
+    <h3 id="five-instances">Five Instances Experiment</h3>
+    <div class="result">
+      <strong>Cloud Run - 5 Cold Instances, 30 Concurrency - 30 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/6a - cloud run 30c 5 instance - hey 5m 30c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/6a - cloud run 30c 5 instance - hey 5m 30c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/6a - cloud run 30c 5 instance - hey 5m 30c - metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - 5 Cold Instances, 30 Concurrency - 150 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/6b - cloud run 30c 5 instance - hey 5m 150c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/6b - cloud run 30c 5 instance - hey 5m 150c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/6b - cloud run 30c 5 instance - hey 5m 150c - metrics.PNG">
+    </div>
+
+    <h3 id="ten-instances">Ten Instances Experiment</h3>
+    <div class="result">
+      <strong>Cloud Run - 10 Cold Instances, 30 Concurrency - 30 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/7a - cloud run 30c 10 instance - hey 5m 30c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/7a - cloud run 30c 10 instance - hey 5m 30c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/7a - cloud run 30c 10 instance - hey 5m 30c - metrics.PNG">
+      <strong>Container Instance Metrics</strong>
+      <img src="images/scaling experiments/7a - cloud run 30c 10 instance - hey 5m 30c - instance metrics.PNG">
+      <strong>Container Instance Metrics</strong>
+      <img src="images/scaling experiments/7a - cloud run 30c 10 instance - hey 5m 30c - instance metrics 2.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - 10 Cold Instances, 30 Concurrency - 300 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/7b - cloud run 30c 10 instance - hey 5m 300c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/7b - cloud run 30c 10 instance - hey 5m 300c - startup metrics.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/7b - cloud run 30c 10 instance - hey 5m 300c - startup metrics 2.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/7b - cloud run 30c 10 instance - hey 5m 300c - metrics.PNG">
+      <strong>Container Instance Metrics</strong>
+      <img src="images/scaling experiments/7b - cloud run 30c 10 instance - hey 5m 300c - instance metrics.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - 10 Cold Instances, 30 Concurrency - 300 Hey Concurrency Over 5 Minutes - 2nd Run</strong>
+      <img src="images/scaling experiments/7b.1 - cloud run 30c 10 instance - hey 5m 300c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/7b.1 - cloud run 30c 10 instance - hey 5m 300c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/7b.1 - cloud run 30c 10 instance - hey 5m 300c - metrics.PNG">
+    </div>
+
+    <h3 id="ten-instances-warm">Ten Warm Instances Experiment</h3>
+    <div class="result">
+      <strong>Cloud Run - 10 Warm Instances, 30 Concurrency - 300 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/scaling experiments/7c - cloud run 30c 10 instance warm - hey 5m 300c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/scaling experiments/7c - cloud run 30c 10 instance warm - hey 5m 300c - startup metrics.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/scaling experiments/7c - cloud run 30c 10 instance warm - hey 5m 300c - metrics.PNG">
+      <strong>Container Instance Metrics</strong>
+      <img src="images/scaling experiments/7c - cloud run 30c 10 instance warm - hey 5m 300c - instance metrics.PNG">
+    </div>
+
+    <h2>Revision Change Experiments</h2>
+
+    <h3 id="single-to-single-revision">Single Instance to Single Instance Revision Change</h3>
+    <div class="result">
+      <strong>Cloud Run - 1 Cold Instance, 30 Concurrency, Revision Change Halfway - 30 Hey Concurrency Over 5 Minutes</strong>
+      <img src="images/revision experiments/1 - cloud run 30c 1 instance revision change - hey 5m 30c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/revision experiments/1 - cloud run 30c 1 instance revision change - hey 5m 30c - startup metrics.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/revision experiments/1 - cloud run 30c 1 instance revision change - hey 5m 30c - startup metrics 2.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/revision experiments/1 - cloud run 30c 1 instance revision change - hey 5m 30c - metrics.PNG">
+      <strong>Container Instance Metrics</strong>
+      <img src="images/revision experiments/1 - cloud run 30c 1 instance revision change - hey 5m 30c - instance metrics.PNG">
+      <strong>Container Instance Metrics</strong>
+      <img src="images/revision experiments/1 - cloud run 30c 1 instance revision change - hey 5m 30c - instance metrics 2.PNG">
+    </div>
+    <hr>
+    <div class="result">
+      <strong>Cloud Run - 1 Cold Instance, 30 Concurrency, Revision Change Halfway - 30 Hey Concurrency Over 5 Minutes - 2nd Run</strong>
+      <img src="images/revision experiments/1.1 - cloud run 30c 1 instance revision change - hey 5m 30c.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/revision experiments/1.1 - cloud run 30c 1 instance revision change - hey 5m 30c - startup metrics.PNG">
+      <strong>Container Startup Latency Metrics</strong>
+      <img src="images/revision experiments/1.1 - cloud run 30c 1 instance revision change - hey 5m 30c - startup metrics 2.PNG">
+      <strong>Request Latency Metrics</strong>
+      <img src="images/revision experiments/1.1 - cloud run 30c 1 instance revision change - hey 5m 30c - metrics.PNG">
+      <strong>Container Instance Metrics</strong>
+      <img src="images/revision experiments/1.1 - cloud run 30c 1 instance revision change - hey 5m 30c - instance metrics.PNG">
+      <strong>Container Instance Metrics</strong>
+      <img src="images/revision experiments/1.1 - cloud run 30c 1 instance revision change - hey 5m 30c - instance metrics 2.PNG">
+      <strong>Container Instance Metrics</strong>
+      <img src="images/revision experiments/1.1 - cloud run 30c 1 instance revision change - hey 5m 30c - instance metrics 3.PNG">
+    </div>
+  </body>
+</html>

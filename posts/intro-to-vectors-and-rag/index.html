@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Casey Haralson">
+<meta name="dcterms.date" content="2024-01-25">
+<meta name="description" content="An introduction to using large language models to search and summarize your data.">
+
+<title>Cloud Report - Intro to Embeddings, Vector Databases, and RAG</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../favicon.ico" rel="icon">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Cloud Report - Intro to Embeddings, Vector Databases, and RAG">
+<meta property="og:description" content="An introduction to using large language models to search and summarize your data.">
+<meta property="og:image" content="https://blog.caseyharalson.com/posts/intro-to-vectors-and-rag/thumbnail.jpg">
+<meta property="og:site-name" content="Cloud Report">
+<meta name="twitter:title" content="Cloud Report - Intro to Embeddings, Vector Databases, and RAG">
+<meta name="twitter:description" content="An introduction to using large language models to search and summarize your data.">
+<meta name="twitter:image" content="https://blog.caseyharalson.com/posts/intro-to-vectors-and-rag/thumbnail.jpg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Cloud Report</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CaseyHaralson" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Intro to Embeddings, Vector Databases, and RAG</h1>
+                  <div>
+        <div class="description">
+          An introduction to using large language models to search and summarize your data.
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">vectors</div>
+                <div class="quarto-category">embeddings</div>
+                <div class="quarto-category">database</div>
+                <div class="quarto-category">rag</div>
+                <div class="quarto-category">llm</div>
+                <div class="quarto-category">machine learning</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Casey Haralson </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">January 25, 2024</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#structured-vs-unstructured-data" id="toc-structured-vs-unstructured-data" class="nav-link" data-scroll-target="#structured-vs-unstructured-data">Structured vs Unstructured Data</a></li>
+  <li><a href="#embeddings" id="toc-embeddings" class="nav-link" data-scroll-target="#embeddings">Embeddings</a></li>
+  <li><a href="#embedding-model" id="toc-embedding-model" class="nav-link" data-scroll-target="#embedding-model">Embedding Model</a>
+  <ul class="collapse">
+  <li><a href="#example-embedding-model" id="toc-example-embedding-model" class="nav-link" data-scroll-target="#example-embedding-model">Example Embedding Model</a></li>
+  </ul></li>
+  <li><a href="#vectors" id="toc-vectors" class="nav-link" data-scroll-target="#vectors">Vectors</a></li>
+  <li><a href="#vector-database" id="toc-vector-database" class="nav-link" data-scroll-target="#vector-database">Vector Database</a></li>
+  <li><a href="#steps-1-and-2" id="toc-steps-1-and-2" class="nav-link" data-scroll-target="#steps-1-and-2">Steps 1 and 2</a></li>
+  <li><a href="#retrieval-augmented-generation-rag" id="toc-retrieval-augmented-generation-rag" class="nav-link" data-scroll-target="#retrieval-augmented-generation-rag">Retrieval Augmented Generation (RAG)</a>
+  <ul class="collapse">
+  <li><a href="#prompting" id="toc-prompting" class="nav-link" data-scroll-target="#prompting">Prompting</a></li>
+  <li><a href="#sending-private-information-to-a-public-llm" id="toc-sending-private-information-to-a-public-llm" class="nav-link" data-scroll-target="#sending-private-information-to-a-public-llm">Sending Private Information to a Public LLM</a></li>
+  </ul></li>
+  <li><a href="#step-3" id="toc-step-3" class="nav-link" data-scroll-target="#step-3">Step 3</a></li>
+  <li><a href="#final-thoughts" id="toc-final-thoughts" class="nav-link" data-scroll-target="#final-thoughts">Final Thoughts</a></li>
+  <li><a href="#comments" id="toc-comments" class="nav-link" data-scroll-target="#comments">Comments</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>Have you seen that LLMs (large language models like ChatGPT) are being used to summarize private data that can’t be searched for on the web? You can implement a few tricks and get a model like ChaptGPT to answer questions about or summarize a PDF, personal or company documents, or notes you’ve made over the years.</p>
+<p>There are three basic steps:</p>
+<ol type="1">
+<li>Turn your data into something that can be stored and searched through.
+<ul>
+<li><code>Data -&gt; Embedding Model -&gt; Vectors -&gt; Vector Database</code></li>
+</ul></li>
+<li>Think of something you want to know and ask for the relevant data.
+<ul>
+<li><code>Question -&gt; Vector Database -&gt; Relevant Data</code></li>
+</ul></li>
+<li>Send the question and relevant data to a LLM and get it to answer the question.
+<ul>
+<li><code>Question + Relevant Data -&gt; LLM -&gt; LLM Answers or Summarizes Data</code></li>
+</ul></li>
+</ol>
+</section>
+<section id="structured-vs-unstructured-data" class="level2">
+<h2 class="anchored" data-anchor-id="structured-vs-unstructured-data">Structured vs Unstructured Data</h2>
+<p>First, let’s talk about the sort of data that can be analyzed with this method.</p>
+<p>For our purposes, there are two types of data: structured and unstructured data. Structured data is like data in a database or an excel document (think rows and columns). And, unstructured data is basically everything else like a word document, website page, or PDF.</p>
+<p>The methods we are talking about in this article work best on unstructured data. LLMs have a bad habit of just making things up (hallucinating) and that doesn’t work very well, typically, when you want to know things about structured data.</p>
+<p>How bad would it be if you wanted to know a sum, count, etc over some structured data and you received a made up answer? For example, it probably wouldn’t be good if you asked for your average bank account balance over time and got an answer that had no basis in fact. Let’s go make some decisions based on that answer, right?</p>
+<p>In contrast, made up answers based on unstructured data tend to not be as bad, and it’s easier to verify if the answer was made up. Though, if made up answers WOULD be bad for your case, then you probably want someone trusted to be providing you with answers. You can still use this method to find the data that you are interested in, but you might not want to implement the last step which gets a summary or answer from the LLM based on your data.</p>
+</section>
+<section id="embeddings" class="level2">
+<h2 class="anchored" data-anchor-id="embeddings">Embeddings</h2>
+<p>Embeddings are the underlying technology that makes searching data with this method work. So, what is an embedding?</p>
+<p>To get a visual we can talk about, let’s take a few words from some sentences and plot them on a graph. “The <em>quick</em> <em>brown</em> <em>fox</em> jumps over the <em>lazy</em> <em>dog</em>” is plotted on the graph below in blue and the quote “<em>Love</em> isn’t a state of <em>perfect</em> <em>caring</em>, it is an <em>active</em> noun like <em>struggle</em>” from Mr.&nbsp;Rogers is plotted in green. I chose to not plot all the words just to make the example easier to understand.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/two-vectors-plot.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Plot of “quick brown fox lazy dog” and “love perfect caring active struggle”</figcaption>
+</figure>
+</div>
+<p>This is a simplified example of what is really going on, but see how there is a number next to each word on the graph? When we map a word to a number (fox to -.1 for example), this is an embedding. We have to do this mapping because computers are awesome with numbers and they aren’t really good with anything else.</p>
+<p>Not only are we converting a single word to a number, but similar words are embedded close to each other. See how fox, cat, dog, and rabbit are all close to each other and love, caring, and struggle are close to each other?</p>
+<p>Now, taking this to the next level… If we were to embed “<em>yellow</em> <em>cat</em> and <em>red</em> <em>rabbit</em>”, the embedding will end up visually closer to our “quick brown fox” sentence vs the Mr.&nbsp;Rogers quote. See how the blue and red lines overlap and are closer together than the green line in the plot below?</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/three-vectors-plot.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Plot with addition of “yellow cat red rabbit”</figcaption>
+</figure>
+</div>
+<p>This is some secret sauce! We can tell that “yellow cat red rabbit” is closer to “quick brown fox” than “love perfect caring” and none of the words are in either of the other phrases! We can see on the graph that two of these things are close conceptually. This idea is going to allow us to search our data for concepts that are close to what we are looking for without having to know or match on an exact phrase.</p>
+<p>Like I said, this is just a simplified example and realistically there would be tons and tons of words and concepts in the embedding space (x-axis and y-axis on the graph). Also, we only have three examples to make things easier to look at, but hopefully you can see how this would work with bigger and better data.</p>
+</section>
+<section id="embedding-model" class="level2">
+<h2 class="anchored" data-anchor-id="embedding-model">Embedding Model</h2>
+<p>Great! We know what an embedding is, but how do we get them? Well, an embedding model is used to generate embeddings.</p>
+<p>A model in machine learning is basically a program that has been morphed to function in a particular way. You can make a model (program) that can tell if sentences use positive or negative language, if an image has particular objects in the scene, or any of the other wild stuff you might have heard about. The way the model has been morphed typically gives the model type its name (LLM, embedding model, etc).</p>
+<p>For this introduction, we will think of a model as a box with an open top and bottom. Strangely, though, the box can have a top with a different size than the bottom. So you can put a big item in the top and get a small item out of the bottom (and vice versa).</p>
+<p>I’m going to gloss over how these models are trained (morphed), but basically humans put something in the top of the box and tell the model what should come out. The model then gets trained (morphed) until it can reproduce what should come out of the bottom. We do this a bunch of times with lots of different examples until the box is morphed into something that can reproduce what we think should come out of the bottom when we DON’T tell it what should come out. It has to guess what should come out, and we have to be impressed.</p>
+<p>In the case of our embedding model, we can put in a sentence, paragraph, article, etc and we get out embeddings. During the training, the model has learned what concepts are close to each other and can generate embeddings that can be compared like we saw in the plots above.</p>
+<section id="example-embedding-model" class="level3">
+<h3 class="anchored" data-anchor-id="example-embedding-model">Example Embedding Model</h3>
+<p>There are a bunch of models that can generate embeddings, but let’s use the current embedding model by OpenAI (the folks who made ChatGPT) as an example. If we put in any sort of text input up to 6,000 words we will get 1,536 numbers back that look like this (only 14 numbers shown for brevity):</p>
+<pre><code>[0.004021138,0.035306297,-0.00503044,-0.019054601,-0.013294506,
+0.023966111,-0.0010671605,0.0017952082,-0.014104519,-0.033171978,
+0.009128722,0.016495988,0.002171286,0.0013315398,...]</code></pre>
+<p>Remember how I said that the top of the box and bottom of the box can be different sizes? In this case, the top of the box (the input) is around 6,000 words wide and the bottom will output exactly 1,536 numbers every time. Even something simple like “yellow cat red rabbit” would be embedded as 1,536 numbers.</p>
+<p>You might be wondering what happens if you try to put something in the box that is wider than the top. Well, part of it goes into the box and anything wider falls onto the floor. And, anything that fell on the floor doesn’t end up in the embedding which means that it won’t be useful. There are methods to get around this problem, but that is a bit advanced.</p>
+<p>Back to the numbers!</p>
+<p>I’m going to convert the “quick brown fox” embedding from the plot above to numbers so we can see they are similar (yet simplified) to what OpenAI’s embedding model dropped out:</p>
+<pre><code>[0.1,-0.5,-0.1,0.0,-0.3]</code></pre>
+</section>
+</section>
+<section id="vectors" class="level2">
+<h2 class="anchored" data-anchor-id="vectors">Vectors</h2>
+<p>The embedding model dropped out a bunch of numbers, and this grouping of numbers is called a vector:</p>
+<pre><code>[0.004021138,0.035306297,-0.00503044,-0.019054601,-0.013294506,
+0.023966111,-0.0010671605,0.0017952082,-0.014104519,-0.033171978,
+0.009128722,0.016495988,0.002171286,0.0013315398,...]</code></pre>
+<p>This vector has all of the information from the model input (top of the box) embedded into it.</p>
+</section>
+<section id="vector-database" class="level2">
+<h2 class="anchored" data-anchor-id="vector-database">Vector Database</h2>
+<p>At this point we have two things that we need to keep track of:</p>
+<ol type="1">
+<li>a piece of data (an article, PDF, notes, etc)</li>
+<li>the vector that represents that data</li>
+</ol>
+<p>A vector database will allow us to store both of those things, and it will allow us to search through what we have stored. There are a bunch of vector databases that provide various amounts of functionality, but this is the gist of what they do.</p>
+<p>We will be able to hand a vector to a vector database and ask it to give us the closest 3 results, for example. And then the database will hand us back the 3 closest articles, PDFs, notes, or whatever it is that we have stored.</p>
+<p>They can also generally tell us how close the question is to the results they are returning which is really useful.</p>
+<p>Let’s say that we are building this for a company and we are storing policy documents (or something like that). If we were to ask the vector database for the closest documents to some policy question we have, we would expect the results to be close to what we are asking. So, maybe a closeness score of 99%.</p>
+<p>But, if we were to ask the vector database where the closest taco shop is, we would expect the results to be very unrelated. The database would still return us some results (from our earlier example, if “quick brown fox” wasn’t in our database and we asked for “yellow cat”, the database would still return “love perfect caring” as the closest result), but it wouldn’t be very close. So, maybe a closeness score of 20%?</p>
+<p>This closeness score can then be used to determine if results should be returned to the user, or if we should just return “sorry, we don’t know about that”. We could set a threshold of 90%, maybe, to determine if the question being asked has anything to do with what we have stored.</p>
+</section>
+<section id="steps-1-and-2" class="level2">
+<h2 class="anchored" data-anchor-id="steps-1-and-2">Steps 1 and 2</h2>
+<p>At this point we know enough to restate the first two steps that were laid out in the overview. The first two steps go like this:</p>
+<ol type="1">
+<li><p>Turn your data into something that can be stored and searched through</p>
+<ul>
+<li>take some unstructured data (from the example: our “quick brown fox” sentence and quote from Mr.&nbsp;Rogers)</li>
+<li>pass it in to an embedding model that will embed similar information as close together</li>
+<li>the embedding model will drop out a vector per piece of data that we pass in</li>
+<li>the vectors and data can then be stored in a vector database</li>
+</ul></li>
+<li><p>Think of something you want to know and ask for the relevant data</p>
+<ul>
+<li>take your question (from the example: “yellow cat red rabbit”)</li>
+<li>pass it into the embedding model so it will embed the information in the same way as our data from step 1</li>
+<li>the embedding model will drop out a vector</li>
+<li>ask the vector database to return any data that is close to our question vector</li>
+</ul></li>
+</ol>
+<p>Super cool, right?!</p>
+<p>We have our data in a form that we can search, and we can find relevant data whenever we have something we want to find. This is a concept search and not a keyword search. So it doesn’t matter if what we are searching for has the same words as what we ask…the concepts just have to be close.</p>
+<p>But, what if we wanted the computer to summarize the information or use the relevant data and answer our question?</p>
+</section>
+<section id="retrieval-augmented-generation-rag" class="level2">
+<h2 class="anchored" data-anchor-id="retrieval-augmented-generation-rag">Retrieval Augmented Generation (RAG)</h2>
+<p>Large language models (LLMs) like ChatGPT have been trained on a bunch of human conversations and concepts from sources like Wikipedia, Reddit, and anything public on the internet. This means that you can probably ask ChatGPT “what is the airspeed velocity of an unladen swallow”, and it will tell you that it is a quote from the movie Monty Python and the Holy Grail. Someone, and likely many someones, have talked about this quote online, and ChatGPT is able to figure this out.</p>
+<p>But, ChatGPT has only been trained on PUBLIC data. This means that if you ask it a policy question about something specifically at your company, it won’t have any idea. It might still answer (and confidently!), but that is a different problem.</p>
+<p>What we can do, though, is give the LLM some context around our question and push it to answer from what we give it as context.</p>
+<p>This is what retrieval augmented generation does. It implies that we have retrieved some data (like in step 2 from our method) and are augmenting the answer from the LLM to be based on the data we are giving it.</p>
+<p>Lets talk about how we might do that.</p>
+<section id="prompting" class="level3">
+<h3 class="anchored" data-anchor-id="prompting">Prompting</h3>
+<p>When you ask a LLM something, this is called a “prompt”. Not only can you directly ask it something, but you can add additional instructions to help drive the LLM’s output to what you want. For example, if I ask:</p>
+<pre><code>Hey ChatGPT, what is the airspeed velocity of an unladen swallow?
+Can you answer as a pirate might?</code></pre>
+<p>then ChatGPT might answer like (and it totally did answer like this):</p>
+<pre><code>Arrr matey! The airspeed velocity of an unladen swallow be a tricky matter, ye see. 
+If ye be talkin' 'bout a European swallow, it be 'round 20 miles per hour, but 
+if ye be chattin' 'bout an African swallow, well, that be a whole different tale. 
+Pirates be knowin' their birds, but these winged critters be movin' faster 
+than a ship in full sail, savvy? Yarrr!</code></pre>
+<p>Prompts can be constructed in many different ways and they can get extremely complicated. Sometimes it can take a few tries (or a bunch of trial and error) to get the LLM to “understand” the prompt and give a good output.</p>
+<p>Let’s keep going with Monty Python and the Holy Grail and see if we can generate a prompt that can give us an answer based on a paragraph from Wikipedia. Yes, this information is already public so it might not need a specialized prompt to generate an answer, but I can’t post private information in this blog (obviously) and this seems like a good example.</p>
+<p>We can use the first paragraph from the “Development” section in the <a href="https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail#Development">Wikipedia article</a> and see if our heros ever got the grail. A prompt using this idea might look like the following code block.</p>
+<p>I grouped the “information” and the “question” into their own sections (as indicated by the <code>&lt;information&gt;</code> and <code>&lt;question&gt;</code> tags) and then told the LLM to use those sections.</p>
+<pre><code>Use the following information to answer the question.
+
+&lt;information&gt;
+In January 1973 the Monty Python troupe wrote the first draft of the screenplay.
+Half of the material was set in the Middle Ages and half was set in the present day.
+The group decided to focus on the Middle Ages, focusing on the legend of the Holy Grail. 
+By the fourth or fifth draft, the story was complete, and the cast joked that the fact 
+that the Grail was never retrieved would be "a big let-down ... a great anti-climax". 
+Graham Chapman said a challenge was incorporating scenes that did not fit the Holy Grail motif.
+&lt;/information&gt;
+
+&lt;question&gt;
+Did the heros in Monty Python and the Holy Grail ever get the grail?
+&lt;/question&gt;</code></pre>
+<p>We can copy and paste that exact thing into ChatGPT to see what it will do. This is what it returned for me:</p>
+<pre><code>No, the heroes in Monty Python and the Holy Grail did not retrieve the Holy Grail.
+The cast joked that the fact that the Grail was never retrieved would be 
+"a big let-down ... a great anti-climax." So, the film plays on this idea, and 
+despite the characters' quest for the Holy Grail, they do not ultimately succeed in obtaining it.</code></pre>
+<p>This is great! We have a pattern we can use to pass in information and a question to a LLM to get an answer.</p>
+</section>
+<section id="sending-private-information-to-a-public-llm" class="level3">
+<h3 class="anchored" data-anchor-id="sending-private-information-to-a-public-llm">Sending Private Information to a Public LLM</h3>
+<p>You might be wondering if it is a good idea to send your private information to a public LLM. It probably isn’t. You don’t know what that company might be doing, but they are probably storing everything you send to the LLM.</p>
+<p>Some of these companies that make public LLMs also have private ones that won’t store your private information. These private LLMs have policies in place and are constructed in such a way as to not direct your information to their storage system. This is the way to go if you are worried about your private information being stored.</p>
+</section>
+</section>
+<section id="step-3" class="level2">
+<h2 class="anchored" data-anchor-id="step-3">Step 3</h2>
+<p>This is it. We now know how to get a computer to answer a question we have about our data. Let’s restate the last step in this method:</p>
+<ol start="3" type="1">
+<li><p>Send the question and relevant data to a LLM and get it to answer the question</p>
+<ul>
+<li>construct a prompt that includes the question and relevant data that we found in Step 2</li>
+<li>send the prompt to a LLM</li>
+<li>the LLM will spit out an answer</li>
+<li>and there was much rejoicing (if you don’t get it, this is another reference to Monty Python and the Holy Grail)</li>
+</ul></li>
+</ol>
+</section>
+<section id="final-thoughts" class="level2">
+<h2 class="anchored" data-anchor-id="final-thoughts">Final Thoughts</h2>
+<p>Hopefully you walk away from this article with a pretty good idea of how you could store your data, search it for something relevant, and get a LLM to answer or summarize the result.</p>
+<p>We talked about embeddings (which are super cool), a bit about how machine learning models are trained, vector databases, and retrieval augmented generation. While you might not be implementing something like this yourself, hopefully this gives you some ideas of what is possible.</p>
+<p>Cheers!</p>
+</section>
+<section id="comments" class="level2">
+<h2 class="anchored" data-anchor-id="comments">Comments</h2>
+<p>Leave a comment:</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="CaseyHaralson/blog" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
