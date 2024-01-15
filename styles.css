@@ -6,3 +6,11 @@ img.figure-img {
 figcaption.figure-caption {
   margin-bottom: 1rem;
 }
+
+code {
+  background-color: #f7f7f7;
+  white-space: pre-wrap;
+}
+pre code {
+  background-color: #f7f7f7;
+}

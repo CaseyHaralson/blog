@@ -66,7 +66,6 @@ ul.task-list li input[type="checkbox"] {
 
 
 <link rel="stylesheet" href="../../styles.css">
-<link rel="stylesheet" href="styles.css">
 <meta property="og:title" content="Cloud Report - Intro to Embeddings, Vector Databases, and RAG">
 <meta property="og:description" content="An introduction to using large language models to search and summarize your data.">
 <meta property="og:image" content="https://blog.caseyharalson.com/posts/intro-to-vectors-and-rag/thumbnail.jpg">
@@ -168,7 +167,11 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#example-embedding-model" id="toc-example-embedding-model" class="nav-link" data-scroll-target="#example-embedding-model">Example Embedding Model</a></li>
   </ul></li>
   <li><a href="#vectors" id="toc-vectors" class="nav-link" data-scroll-target="#vectors">Vectors</a></li>
-  <li><a href="#vector-database" id="toc-vector-database" class="nav-link" data-scroll-target="#vector-database">Vector Database</a></li>
+  <li><a href="#vector-database" id="toc-vector-database" class="nav-link" data-scroll-target="#vector-database">Vector Database</a>
+  <ul class="collapse">
+  <li><a href="#storing-vector-data" id="toc-storing-vector-data" class="nav-link" data-scroll-target="#storing-vector-data">Storing Vector Data</a></li>
+  <li><a href="#searching-vector-data" id="toc-searching-vector-data" class="nav-link" data-scroll-target="#searching-vector-data">Searching Vector Data</a></li>
+  </ul></li>
   <li><a href="#steps-1-and-2" id="toc-steps-1-and-2" class="nav-link" data-scroll-target="#steps-1-and-2">Steps 1 and 2</a></li>
   <li><a href="#retrieval-augmented-generation-rag" id="toc-retrieval-augmented-generation-rag" class="nav-link" data-scroll-target="#retrieval-augmented-generation-rag">Retrieval Augmented Generation (RAG)</a>
   <ul class="collapse">
@@ -217,7 +220,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="embeddings" class="level2">
 <h2 class="anchored" data-anchor-id="embeddings">Embeddings</h2>
 <p>Embeddings are the underlying technology that makes searching data with this method work. So, what is an embedding?</p>
-<p>To get a visual we can talk about, let’s take a few words from some sentences and plot them on a graph. “The <em>quick</em> <em>brown</em> <em>fox</em> jumps over the <em>lazy</em> <em>dog</em>” is plotted on the graph below in blue and the quote “<em>Love</em> isn’t a state of <em>perfect</em> <em>caring</em>, it is an <em>active</em> noun like <em>struggle</em>” from Mr.&nbsp;Rogers is plotted in green. I chose to not plot all the words just to make the example easier to understand.</p>
+<p>To get a visual we can talk about, let’s take a few words from some sentences and plot them on a graph. “The <em>quick</em> <em>brown</em> <em>fox</em> jumps over the <em>lazy</em> <em>dog</em>” is plotted on the graph below in blue and the quote “<em>Love</em> isn’t a state of <em>perfect</em> <em>caring</em>, it is an <em>active</em> noun like <em>struggle</em>” from Mr.&nbsp;Rogers is plotted in green. I chose to not plot all the words just to make the example easier to see.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/two-vectors-plot.png" class="img-fluid figure-img"></p>
@@ -225,7 +228,7 @@ ul.task-list li input[type="checkbox"] {
 </figure>
 </div>
 <p>This is a simplified example of what is really going on, but see how there is a number next to each word on the graph? When we map a word to a number (fox to -.1 for example), this is an embedding. We have to do this mapping because computers are awesome with numbers and they aren’t really good with anything else.</p>
-<p>Not only are we converting a single word to a number, but similar words are embedded close to each other. See how fox, cat, dog, and rabbit are all close to each other and love, caring, and struggle are close to each other?</p>
+<p>Not only are we converting a single word to a number, but similar words are embedded close to each other. See how fox, cat, dog, and rabbit (animals) are all close to each other (around -.2) and love, caring, and struggle (emotions) are close to each other (around .6)?</p>
 <p>Now, taking this to the next level… If we were to embed “<em>yellow</em> <em>cat</em> and <em>red</em> <em>rabbit</em>”, the embedding will end up visually closer to our “quick brown fox” sentence vs the Mr.&nbsp;Rogers quote. See how the blue and red lines overlap and are closer together than the green line in the plot below?</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -233,50 +236,60 @@ ul.task-list li input[type="checkbox"] {
 <figcaption class="figure-caption">Plot with addition of “yellow cat red rabbit”</figcaption>
 </figure>
 </div>
-<p>This is some secret sauce! We can tell that “yellow cat red rabbit” is closer to “quick brown fox” than “love perfect caring” and none of the words are in either of the other phrases! We can see on the graph that two of these things are close conceptually. This idea is going to allow us to search our data for concepts that are close to what we are looking for without having to know or match on an exact phrase.</p>
-<p>Like I said, this is just a simplified example and realistically there would be tons and tons of words and concepts in the embedding space (x-axis and y-axis on the graph). Also, we only have three examples to make things easier to look at, but hopefully you can see how this would work with bigger and better data.</p>
+<p>This is some secret sauce! We can tell that “yellow cat red rabbit” is closer to “quick brown fox” than “love perfect caring” and none of the words in the phrases overlap! We can see on the graph that two of these things are close conceptually. This idea is going to allow us to search our data for concepts that are close to what we are looking for without having to know or match on an exact phrase.</p>
 </section>
 <section id="embedding-model" class="level2">
 <h2 class="anchored" data-anchor-id="embedding-model">Embedding Model</h2>
 <p>Great! We know what an embedding is, but how do we get them? Well, an embedding model is used to generate embeddings.</p>
 <p>A model in machine learning is basically a program that has been morphed to function in a particular way. You can make a model (program) that can tell if sentences use positive or negative language, if an image has particular objects in the scene, or any of the other wild stuff you might have heard about. The way the model has been morphed typically gives the model type its name (LLM, embedding model, etc).</p>
-<p>For this introduction, we will think of a model as a box with an open top and bottom. Strangely, though, the box can have a top with a different size than the bottom. So you can put a big item in the top and get a small item out of the bottom (and vice versa).</p>
-<p>I’m going to gloss over how these models are trained (morphed), but basically humans put something in the top of the box and tell the model what should come out. The model then gets trained (morphed) until it can reproduce what should come out of the bottom. We do this a bunch of times with lots of different examples until the box is morphed into something that can reproduce what we think should come out of the bottom when we DON’T tell it what should come out. It has to guess what should come out, and we have to be impressed.</p>
+<p>Let’s think of a model as a box with an open top and bottom. You can put something in the top of the box, the box does its magic, and drops the “answer” out of the bottom.</p>
+<p>These sorts of machine learning models are trained (morphed) with these basic steps:</p>
+<ol type="1">
+<li>humans put something in the top of the box and tell the model what the answer should be (what should come out of the bottom of the box)</li>
+<li>the model then gets trained (morphed) until it can reproduce the answer</li>
+<li>repeat a bunch of times with lots of different examples</li>
+<li>the model can now guess what the answer should be when we DON’T tell it what the answer is for a particular input</li>
+<li>when we are impressed with the model’s answers, we can start using the model</li>
+</ol>
 <p>In the case of our embedding model, we can put in a sentence, paragraph, article, etc and we get out embeddings. During the training, the model has learned what concepts are close to each other and can generate embeddings that can be compared like we saw in the plots above.</p>
 <section id="example-embedding-model" class="level3">
 <h3 class="anchored" data-anchor-id="example-embedding-model">Example Embedding Model</h3>
-<p>There are a bunch of models that can generate embeddings, but let’s use the current embedding model by OpenAI (the folks who made ChatGPT) as an example. If we put in any sort of text input up to 6,000 words we will get 1,536 numbers back that look like this (only 14 numbers shown for brevity):</p>
-<pre><code>[0.004021138,0.035306297,-0.00503044,-0.019054601,-0.013294506,
-0.023966111,-0.0010671605,0.0017952082,-0.014104519,-0.033171978,
-0.009128722,0.016495988,0.002171286,0.0013315398,...]</code></pre>
-<p>Remember how I said that the top of the box and bottom of the box can be different sizes? In this case, the top of the box (the input) is around 6,000 words wide and the bottom will output exactly 1,536 numbers every time. Even something simple like “yellow cat red rabbit” would be embedded as 1,536 numbers.</p>
-<p>You might be wondering what happens if you try to put something in the box that is wider than the top. Well, part of it goes into the box and anything wider falls onto the floor. And, anything that fell on the floor doesn’t end up in the embedding which means that it won’t be useful. There are methods to get around this problem, but that is a bit advanced.</p>
-<p>Back to the numbers!</p>
+<p>There are a bunch of models that can generate embeddings, but let’s use the current embedding model by OpenAI (the folks who made ChatGPT) as an example. We can give the model our input and it will return a bunch of numbers that look like this (only 14 numbers shown for brevity):</p>
+<pre><code>[0.004021138, 0.035306297, -0.00503044, -0.019054601, -0.013294506, 0.023966111, -0.0010671605, 0.0017952082, -0.014104519, -0.033171978, 0.009128722, 0.016495988, 0.002171286, 0.0013315398, ...]</code></pre>
 <p>I’m going to convert the “quick brown fox” embedding from the plot above to numbers so we can see they are similar (yet simplified) to what OpenAI’s embedding model dropped out:</p>
-<pre><code>[0.1,-0.5,-0.1,0.0,-0.3]</code></pre>
+<pre><code>[0.1, -0.5, -0.1, 0.0, -0.3]</code></pre>
 </section>
 </section>
 <section id="vectors" class="level2">
 <h2 class="anchored" data-anchor-id="vectors">Vectors</h2>
 <p>The embedding model dropped out a bunch of numbers, and this grouping of numbers is called a vector:</p>
-<pre><code>[0.004021138,0.035306297,-0.00503044,-0.019054601,-0.013294506,
-0.023966111,-0.0010671605,0.0017952082,-0.014104519,-0.033171978,
-0.009128722,0.016495988,0.002171286,0.0013315398,...]</code></pre>
-<p>This vector has all of the information from the model input (top of the box) embedded into it.</p>
+<pre><code>[0.004021138, 0.035306297, -0.00503044, -0.019054601, -0.013294506, 0.023966111, -0.0010671605, 0.0017952082, -0.014104519, -0.033171978, 0.009128722, 0.016495988, 0.002171286, 0.0013315398, ...]</code></pre>
+<p>A vector really is just a group of numbers. We are dealing with vectors that have been generated from an embedding model, so they are special in that the numbers represent concepts. But, ultimately a vector is just a group of numbers.</p>
 </section>
 <section id="vector-database" class="level2">
 <h2 class="anchored" data-anchor-id="vector-database">Vector Database</h2>
 <p>At this point we have two things that we need to keep track of:</p>
 <ol type="1">
-<li>a piece of data (an article, PDF, notes, etc)</li>
-<li>the vector that represents that data</li>
+<li>a piece of data (an article, PDF, notes, etc) (the input to the embedding model)</li>
+<li>the vector that represents that data (the output from the embedding model)</li>
 </ol>
-<p>A vector database will allow us to store both of those things, and it will allow us to search through what we have stored. There are a bunch of vector databases that provide various amounts of functionality, but this is the gist of what they do.</p>
-<p>We will be able to hand a vector to a vector database and ask it to give us the closest 3 results, for example. And then the database will hand us back the 3 closest articles, PDFs, notes, or whatever it is that we have stored.</p>
+<p>A vector database will allow us to store both of those things, and it will allow us to search through what we have stored. There are a bunch of vector databases that provide various amounts of functionality, but that is the gist of what they do.</p>
+<section id="storing-vector-data" class="level3">
+<h3 class="anchored" data-anchor-id="storing-vector-data">Storing Vector Data</h3>
+<p>The first thing the vector database allows us to do is to store our data.</p>
+<p>We can take all of our articles/PDFs/notes/etc, convert them into vectors with an embedding model, and then save both into the vector database. This saves the data we actually care about (the article/PDF/notes) and ties it to the vector representation.</p>
+<p>Since the vector and data are tied together now, we can get from a vector to the underlying data that we actually care about. This is important when we start searching the vectors.</p>
+</section>
+<section id="searching-vector-data" class="level3">
+<h3 class="anchored" data-anchor-id="searching-vector-data">Searching Vector Data</h3>
+<p>The second thing the vector database allows us to do is to search our data.</p>
+<p>We can think of something we want to search for (“yellow cat red rabbit” for example), convert it into a vector, and ask the vector database to give us the closest results. The vector database searches the list of stored vectors, gathers a list of close vectors and the data tied to those vectors, and then returns the data we care about (the article/PDF/notes).</p>
+<p>So, we will be able to hand a vector to a vector database and ask it to give us the closest 3 results, for example. And then the database will hand us back the 3 closest articles, PDFs, notes, or whatever it is that we have stored.</p>
 <p>They can also generally tell us how close the question is to the results they are returning which is really useful.</p>
 <p>Let’s say that we are building this for a company and we are storing policy documents (or something like that). If we were to ask the vector database for the closest documents to some policy question we have, we would expect the results to be close to what we are asking. So, maybe a closeness score of 99%.</p>
 <p>But, if we were to ask the vector database where the closest taco shop is, we would expect the results to be very unrelated. The database would still return us some results (from our earlier example, if “quick brown fox” wasn’t in our database and we asked for “yellow cat”, the database would still return “love perfect caring” as the closest result), but it wouldn’t be very close. So, maybe a closeness score of 20%?</p>
 <p>This closeness score can then be used to determine if results should be returned to the user, or if we should just return “sorry, we don’t know about that”. We could set a threshold of 90%, maybe, to determine if the question being asked has anything to do with what we have stored.</p>
+</section>
 </section>
 <section id="steps-1-and-2" class="level2">
 <h2 class="anchored" data-anchor-id="steps-1-and-2">Steps 1 and 2</h2>
@@ -299,7 +312,7 @@ ul.task-list li input[type="checkbox"] {
 </ol>
 <p>Super cool, right?!</p>
 <p>We have our data in a form that we can search, and we can find relevant data whenever we have something we want to find. This is a concept search and not a keyword search. So it doesn’t matter if what we are searching for has the same words as what we ask…the concepts just have to be close.</p>
-<p>But, what if we wanted the computer to summarize the information or use the relevant data and answer our question?</p>
+<p>But, what if we wanted the computer to summarize the information or use the relevant data and answer our question? This is where retrieval augmented generation (RAG) comes in to play.</p>
 </section>
 <section id="retrieval-augmented-generation-rag" class="level2">
 <h2 class="anchored" data-anchor-id="retrieval-augmented-generation-rag">Retrieval Augmented Generation (RAG)</h2>
@@ -307,7 +320,7 @@ ul.task-list li input[type="checkbox"] {
 <p>But, ChatGPT has only been trained on PUBLIC data. This means that if you ask it a policy question about something specifically at your company, it won’t have any idea. It might still answer (and confidently!), but that is a different problem.</p>
 <p>What we can do, though, is give the LLM some context around our question and push it to answer from what we give it as context.</p>
 <p>This is what retrieval augmented generation does. It implies that we have retrieved some data (like in step 2 from our method) and are augmenting the answer from the LLM to be based on the data we are giving it.</p>
-<p>Lets talk about how we might do that.</p>
+<p>Let’s talk about how we might do that.</p>
 <section id="prompting" class="level3">
 <h3 class="anchored" data-anchor-id="prompting">Prompting</h3>
 <p>When you ask a LLM something, this is called a “prompt”. Not only can you directly ask it something, but you can add additional instructions to help drive the LLM’s output to what you want. For example, if I ask:</p>
@@ -315,13 +328,10 @@ ul.task-list li input[type="checkbox"] {
 Can you answer as a pirate might?</code></pre>
 <p>then ChatGPT might answer like (and it totally did answer like this):</p>
 <pre><code>Arrr matey! The airspeed velocity of an unladen swallow be a tricky matter, ye see. 
-If ye be talkin' 'bout a European swallow, it be 'round 20 miles per hour, but 
-if ye be chattin' 'bout an African swallow, well, that be a whole different tale. 
-Pirates be knowin' their birds, but these winged critters be movin' faster 
-than a ship in full sail, savvy? Yarrr!</code></pre>
+If ye be talkin' 'bout a European swallow, it be 'round 20 miles per hour, but if ye be chattin' 'bout an African swallow, well, that be a whole different tale. 
+Pirates be knowin' their birds, but these winged critters be movin' faster than a ship in full sail, savvy? Yarrr!</code></pre>
 <p>Prompts can be constructed in many different ways and they can get extremely complicated. Sometimes it can take a few tries (or a bunch of trial and error) to get the LLM to “understand” the prompt and give a good output.</p>
-<p>Let’s keep going with Monty Python and the Holy Grail and see if we can generate a prompt that can give us an answer based on a paragraph from Wikipedia. Yes, this information is already public so it might not need a specialized prompt to generate an answer, but I can’t post private information in this blog (obviously) and this seems like a good example.</p>
-<p>We can use the first paragraph from the “Development” section in the <a href="https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail#Development">Wikipedia article</a> and see if our heros ever got the grail. A prompt using this idea might look like the following code block.</p>
+<p>Let’s keep going with Monty Python and the Holy Grail and see if we can generate a prompt that can give us an answer based on a paragraph from Wikipedia. We can use the first paragraph from the “Development” section in the <a href="https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail#Development">Wikipedia article</a> and see if our heros ever got the grail. A prompt using this idea might look like the following code block.</p>
 <p>I grouped the “information” and the “question” into their own sections (as indicated by the <code>&lt;information&gt;</code> and <code>&lt;question&gt;</code> tags) and then told the LLM to use those sections.</p>
 <pre><code>Use the following information to answer the question.
 
@@ -329,8 +339,7 @@ than a ship in full sail, savvy? Yarrr!</code></pre>
 In January 1973 the Monty Python troupe wrote the first draft of the screenplay.
 Half of the material was set in the Middle Ages and half was set in the present day.
 The group decided to focus on the Middle Ages, focusing on the legend of the Holy Grail. 
-By the fourth or fifth draft, the story was complete, and the cast joked that the fact 
-that the Grail was never retrieved would be "a big let-down ... a great anti-climax". 
+By the fourth or fifth draft, the story was complete, and the cast joked that the fact that the Grail was never retrieved would be "a big let-down ... a great anti-climax". 
 Graham Chapman said a challenge was incorporating scenes that did not fit the Holy Grail motif.
 &lt;/information&gt;
 
@@ -339,10 +348,9 @@ Did the heros in Monty Python and the Holy Grail ever get the grail?
 &lt;/question&gt;</code></pre>
 <p>We can copy and paste that exact thing into ChatGPT to see what it will do. This is what it returned for me:</p>
 <pre><code>No, the heroes in Monty Python and the Holy Grail did not retrieve the Holy Grail.
-The cast joked that the fact that the Grail was never retrieved would be 
-"a big let-down ... a great anti-climax." So, the film plays on this idea, and 
-despite the characters' quest for the Holy Grail, they do not ultimately succeed in obtaining it.</code></pre>
-<p>This is great! We have a pattern we can use to pass in information and a question to a LLM to get an answer.</p>
+The cast joked that the fact that the Grail was never retrieved would be "a big let-down ... a great anti-climax." 
+So, the film plays on this idea, and despite the characters' quest for the Holy Grail, they do not ultimately succeed in obtaining it.</code></pre>
+<p>This is great! The LLM answered from the information we provided. We now have a pattern we can use to pass in information and a question to a LLM to get an answer.</p>
 </section>
 <section id="sending-private-information-to-a-public-llm" class="level3">
 <h3 class="anchored" data-anchor-id="sending-private-information-to-a-public-llm">Sending Private Information to a Public LLM</h3>
@@ -359,7 +367,7 @@ despite the characters' quest for the Holy Grail, they do not ultimately succeed
 <li>construct a prompt that includes the question and relevant data that we found in Step 2</li>
 <li>send the prompt to a LLM</li>
 <li>the LLM will spit out an answer</li>
-<li>and there was much rejoicing (if you don’t get it, this is another reference to Monty Python and the Holy Grail)</li>
+<li>and there was much rejoicing</li>
 </ul></li>
 </ol>
 </section>
