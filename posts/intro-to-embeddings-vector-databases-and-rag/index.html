@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Casey Haralson">
-<meta name="dcterms.date" content="2024-01-25">
+<meta name="dcterms.date" content="2024-01-21">
 <meta name="description" content="An introduction to using large language models to search and summarize your data.">
 
 <title>Cloud Report - Intro to Embeddings, Vector Databases, and RAG</title>
@@ -68,11 +68,11 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="../../styles.css">
 <meta property="og:title" content="Cloud Report - Intro to Embeddings, Vector Databases, and RAG">
 <meta property="og:description" content="An introduction to using large language models to search and summarize your data.">
-<meta property="og:image" content="https://blog.caseyharalson.com/posts/intro-to-vectors-and-rag/thumbnail.jpg">
+<meta property="og:image" content="https://blog.caseyharalson.com/posts/intro-to-embeddings-vector-databases-and-rag/thumbnail.jpg">
 <meta property="og:site-name" content="Cloud Report">
 <meta name="twitter:title" content="Cloud Report - Intro to Embeddings, Vector Databases, and RAG">
 <meta name="twitter:description" content="An introduction to using large language models to search and summarize your data.">
-<meta name="twitter:image" content="https://blog.caseyharalson.com/posts/intro-to-vectors-and-rag/thumbnail.jpg">
+<meta name="twitter:image" content="https://blog.caseyharalson.com/posts/intro-to-embeddings-vector-databases-and-rag/thumbnail.jpg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
@@ -143,7 +143,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">January 25, 2024</p>
+        <p class="date">January 21, 2024</p>
       </div>
     </div>
     
@@ -247,7 +247,7 @@ ul.task-list li input[type="checkbox"] {
 <ol type="1">
 <li>humans put something in the top of the box and tell the model what the answer should be (what should come out of the bottom of the box)</li>
 <li>the model then gets trained (morphed) until it can reproduce the answer</li>
-<li>repeat a bunch of times with lots of different examples</li>
+<li>repeat steps 1 and 2 a bunch of times with lots of different examples</li>
 <li>the model can now guess what the answer should be when we DON’T tell it what the answer is for a particular input</li>
 <li>when we are impressed with the model’s answers, we can start using the model</li>
 </ol>
@@ -367,7 +367,7 @@ So, the film plays on this idea, and despite the characters' quest for the Holy 
 <li>construct a prompt that includes the question and relevant data that we found in Step 2</li>
 <li>send the prompt to a LLM</li>
 <li>the LLM will spit out an answer</li>
-<li>and there was much rejoicing</li>
+<li>and there was much rejoicing!</li>
 </ul></li>
 </ol>
 </section>

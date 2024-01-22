@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/intro-to-embeddings-vector-databases-and-rag/index.html",
       "/posts/gcp-cloud-run-concurrency-and-scaling/index.html",
       "/posts/gcp-serverless-comparison/index.html"
     ]

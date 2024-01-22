@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://blog.caseyharalson.com/posts/intro-to-embeddings-vector-databases-and-rag/index.html</loc>
+    <lastmod>2024-01-22T00:20:38.483Z</lastmod>
+  </url>
+  <url>
     <loc>https://blog.caseyharalson.com/posts/gcp-cloud-run-concurrency-and-scaling/index.html</loc>
-    <lastmod>2024-01-15T17:56:22.091Z</lastmod>
+    <lastmod>2024-01-22T00:20:37.693Z</lastmod>
   </url>
   <url>
     <loc>https://blog.caseyharalson.com/about.html</loc>
-    <lastmod>2024-01-15T17:56:21.271Z</lastmod>
+    <lastmod>2024-01-22T00:20:36.853Z</lastmod>
   </url>
   <url>
     <loc>https://blog.caseyharalson.com/index.html</loc>
-    <lastmod>2024-01-15T17:56:21.541Z</lastmod>
+    <lastmod>2024-01-22T00:20:37.173Z</lastmod>
   </url>
   <url>
     <loc>https://blog.caseyharalson.com/posts/gcp-serverless-comparison/index.html</loc>
-    <lastmod>2024-01-15T17:56:22.511Z</lastmod>
+    <lastmod>2024-01-22T00:20:38.103Z</lastmod>
   </url>
 </urlset>
